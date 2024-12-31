@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#000000">
+
+    <!-- Linear layout for particles animation -->
+    <LinearLayout
+        android:id="@+id/linear1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#000000">
+        <!-- Add particle animation logic in Java -->
+    </LinearLayout>
+
+    <!-- Glowing stroke Linear -->
+    <LinearLayout
+        android:id="@+id/linear2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:background="@drawable/glowing_stroke">
+
+        <!-- Timer TextViews -->
+        <TextView
+            android:id="@+id/textview1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Timer 1"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textview2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Timer 2"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp" />
+
+        <!-- Trend TextView -->
+        <TextView
+            android:id="@+id/textview3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Trend"
+            android:textColor="#FF0000"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <!-- ListView -->
+    <ListView
+        android:id="@+id/listview1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF" />
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CHECK RESULT" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HISTORY" />
+    </LinearLayout>
+</LinearLayout>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#000000" />
+    <stroke
+        android:width="4dp"
+        android:color="#FF0000" />
+    <corners android:radius="10dp" />
+</shape>
+package com.example.app;
+
+import android.os.Bundle;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+public class MainActivity extends AppCompatActivity {
+
+    TextView textview1, textview2, textview3;
+    ListView listview1;
+    Button button1, button2;
+    Timer timer;
+    boolean isClickable = true;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        textview1 = findViewById(R.id.textview1);
+        textview2 = findViewById(R.id.textview2);
+        textview3 = findViewById(R.id.textview3);
+        listview1 = findViewById(R.id.listview1);
+        button1 = findViewById(R.id.button1);
+        button2 = findViewById(R.id.button2);
+
+        // Start timer logic for textview1 and textview2
+        startTimer();
+
+        // Set button click listener for "CHECK RESULT"
+        button1.setOnClickListener(v -> {
+            if (isClickable) {
+                showTrendResult();
+                isClickable = false;
+            } else {
+                Toast.makeText(this, "Please wait for the next result", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void startTimer() {
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(() -> {
+                    Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+
+                    int seconds = calendar.get(Calendar.SECOND);
+                    int remainingSeconds = 60 - seconds;
+                    int minutes = calendar.get(Calendar.MINUTE);
+                    int totalMinutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + minutes;
+
+                    textview1.setText(new SimpleDateFormat("yyyyMMdd").format(calendar.getTime())
+                            .concat("1000".concat(String.valueOf((10001 + totalMinutes)))));
+
+                    textview2.setText(String.format("   %02d  :  %02d", 0, remainingSeconds)
+                            .replaceAll("(?<=\\d)(?=\\d)", " "));
+                });
+            }
+        }, 0, 1000);
+    }
+
+    private void showTrendResult() {
+        String[] RESULTS = {"6", "1", "7", "3", "9", "2", "0", "8", "5", "4"};
+        ArrayList<String> lastResults = new ArrayList<>(Arrays.asList("3", "3", "7"));
+        String trend = "";
+
+        Random random = new Random();
+        if (random.nextBoolean()) {
+            trend = "SMALL";
+        } else {
+            trend = "BIG";
+        }
+
+        textview3.setText(trend);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, lastResults);
+        listview1.setAdapter(adapter);
+    }
+}
